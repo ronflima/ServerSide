@@ -23,8 +23,9 @@ matters: your business code.
 
 ## Zewo
 
-Server Size is designed to interoperate with Zewo server software. In fact,
-Server Side is a complementation of Zewo.
+Server Side is designed to interoperate with Zewo server software. In fact,
+Server Side is a complementation of Zewo, adding a lot of boiler plate in order
+to make your life easier.
 
 ## License
 
