@@ -2,8 +2,6 @@
 
 [![Platform][platform-badge]][platform-url]
 [![License][mit-badge]][mit-url]
-[![Slack][slack-badge]][slack-url]
-
 
 A swift implementation for a server application. 
 
@@ -28,10 +26,11 @@ matters: your business code.
 Server Size is designed to interoperate with Zewo server software. In fact,
 Server Side is a complementation of Zewo.
 
+## License
+
+This software is distributed under [MIT License][mit-url].
+
 [platform-badge]: https://img.shields.io/badge/Platform-Mac%20%26%20Linux-lightgray.svg?style=flat
 [platform-url]: https://swift.org
 [mit-badge]: https://img.shields.io/badge/License-MIT-blue.svg?style=flat
 [mit-url]: https://tldrlegal.com/license/mit-license
-[slack-image]: http://s13.postimg.org/ybwy92ktf/Slack.png
-[slack-badge]: https://zewo-slackin.herokuapp.com/badge.svg
-[slack-url]: http://slack.zewo.io
