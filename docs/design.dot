@@ -1,0 +1,41 @@
+// -*-dot-*-
+// Server Side Design
+// Author: Ronaldo Faria Lima (c) 2017 - All Rights Reserved
+//
+
+digraph ServerSideDesign {
+    fontname="Ubuntu Bold"
+    node [shape="box", fontname="Ubuntu"]
+    label="Server Side Design"
+    Coord[label="Server Coordinator"]
+    Signal[label="Signal Handler"]
+    Term[label="Termination Controller"]
+    Hup[label="Restart Controller"]
+    Chld[label="Child Process\nSynchronization"]
+    Server1[label="Server Instance"]
+    Server2[label="Server Instance"]
+    ServerN[label="Server Instance"]
+    Env[label="Server Environment"]
+    Config[label="Configuration"]
+    CmdLine[label="Command Line\nArguments"]
+    EnvVars[label="Environment Variables"]
+    Usr[label="Custom Signal\nHandlers"]
+    Coord -> Server1
+    Coord -> Server2
+    Coord -> ServerN
+    Server1 -> Env
+    Server1 -> Signal
+    Server1 -> Logging
+    subgraph cluster0 {
+        label="Server Side Run-time"
+        labeljust="r"
+        Logging[label="Logging"]
+        Env -> Config
+        Env -> CmdLine
+        Env -> EnvVars
+        Signal -> Term
+        Signal -> Hup
+        Signal -> Chld
+        Signal -> Usr
+    }
+}

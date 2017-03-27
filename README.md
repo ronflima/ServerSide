@@ -27,6 +27,10 @@ Server Side is designed to interoperate with Zewo server software. In fact,
 Server Side is a complementation of Zewo, adding a lot of boiler plate in order
 to make your life easier.
 
+## ServerSide Design
+
+![design](img/design.png)
+
 ## License
 
 This software is distributed under [MIT License][mit-url].
