@@ -27,27 +27,106 @@
 import Foundation
 import POSIX
 
-public struct Server: SignalHandlerDelegate {
-    let delegate: ServerDelegate
-    static let instanceController = InstanceController()
+/// Possible running states for a server process
+public enum ServerState {
+    /// Server was created but is not yet running
+    case created
+    /// Server is running
+    case running
+    /// Server was halted
+    case halted
+    /// Server has completed executing correctly
+    case exited
+    /// Process exited without control.
+    case killed
+}
+
+/// Server configuration structure
+public typealias ServerConfiguration = [String:Any]
+
+/// This class is an abstraction for a server instance. Each instance runs in
+/// its own address space, i.e., in a child process.
+public final class Server {
+    /// This instance PPID
+    let ppid: PID
+    /// This instance PID
+    let pid: PID
+    /// Server delegate
+    public var delegate: ServerDelegate?
+    /// Server state
+    public var state = ServerState.created
+    /// Default, and only instance, of the server
+    static let `default` = Server()
+    /// Signal delegate. This is a class variable since signal handling is done
+    /// at the process level.
+    static let signalHandler = SignalHandler(server: Server.default)
     
-    public init(delegate: ServerDelegate) {
-        self.delegate = delegate
+    /// Initializer. Adds a delegate to the running instance
+    fileprivate init() {
+        self.ppid = getppid()
+        self.pid = getpid()
+    }
+
+    /// Starts this instance execution
+    public func start() {
+    }
+
+    /// Stops this instance execution
+    public func stop() {
+    }
+
+    /// Kills this instance by sending a KILL signal to it.
+    ///
+    /// - remarks: Use this only in extreme situations. This will make your
+    /// process end without notice. Any pending buffers will not be flushed and
+    /// all resources will be lost.
+    func kill() {
+        Signal.killPid(signal: .kill)
+    }
+
+    /// Restarts the server, refreshing it. In fact, this is a convenience
+    /// method.
+    public func restart() {
+        stop()
+        start()
+    }
+}
+
+/// Handles signals.
+///
+/// - comments: It is supposed to have only a single instance of this struct. It
+/// was designed with this in mind.
+struct SignalHandler: SignalHandlerDelegate {
+    /// Dependency injected through initializer
+    weak var server: Server?
+    
+    /// Installs it as a signal handler delegate
+    init(server: Server) {
         Signal.delegate = self
-    }
-    
-    public func run() {
-        
-    }
-    
-    func configure() {
-        let defaultHandledSignals: [SignalType] = [.term, .hup, .chld]
-        for signalType in defaultHandledSignals {
-            Signal.setTrap(signal: signalType, action: .handle)
+        let signals: [SignalType] = [.hup, .int, .segv, .term, .abrt]
+        for signal in signals {
+            Signal.setTrap(signal: signal, action: .handle)
         }
+        self.server = server
     }
-    
-    mutating public func handleSignal(signal: SignalType?) {
-        
+
+    // MARK: SignalHandlerDelegate
+
+    /// Handles a signal received by the process
+    mutating func handleSignal(signal: SignalType?) {
+        guard signal != nil else {
+            return
+        }
+        switch signal! {
+        case .hup:
+            server?.restart()
+        case .int, .term:
+            server?.stop()
+        case .abrt:
+            server?.kill()
+        default:
+            // Do nothing.
+            break
+        }
     }
 }
