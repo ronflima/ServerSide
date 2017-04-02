@@ -31,12 +31,7 @@ import Foundation
 /// states that would be necessary for proper operation.
 @objc
 public protocol ServerDelegate {
-    /// The entry point of your server application.
-    func main(argv: [String], env: [String]) -> Int
-    
-    /// Signal handler. Excited if the process receives a signal
-    @objc optional func signal(signal: Int) -> Void
-    
-    /// The run-time calls this during process initialization.
-    @objc optional func shouldIgnoreSignal(signal: Int) -> Bool
+    @objc optional func loadConfiguration()
+    func start(arguments: [String])
+    func stop()
 }

@@ -41,9 +41,6 @@ public enum ServerState {
     case killed
 }
 
-/// Server configuration structure
-public typealias ServerConfiguration = [String:Any]
-
 /// This class is an abstraction for a server instance. Each instance runs in
 /// its own address space, i.e., in a child process.
 public final class Server {
@@ -52,7 +49,7 @@ public final class Server {
     /// This instance PID
     let pid: PID
     /// Server delegate
-    public var delegate: ServerDelegate?
+    public weak var delegate: ServerDelegate?
     /// Server state
     public var state = ServerState.created
     /// Default, and only instance, of the server
@@ -69,10 +66,13 @@ public final class Server {
 
     /// Starts this instance execution
     public func start() {
+        delegate?.loadConfiguration?()
+        delegate?.start(arguments: CommandLine.arguments)
     }
 
     /// Stops this instance execution
     public func stop() {
+        delegate?.stop()
     }
 
     /// Kills this instance by sending a KILL signal to it.
@@ -85,7 +85,7 @@ public final class Server {
     }
 
     /// Restarts the server, refreshing it. In fact, this is a convenience
-    /// method.
+    /// method that stops and starts the server again.
     public func restart() {
         stop()
         start()
@@ -123,6 +123,7 @@ struct SignalHandler: SignalHandlerDelegate {
         case .int, .term:
             server?.stop()
         case .abrt:
+            // TODO: Log here what happened and kill the process
             server?.kill()
         default:
             // Do nothing.
