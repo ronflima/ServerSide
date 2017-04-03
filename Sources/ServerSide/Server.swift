@@ -24,8 +24,12 @@
 // Created: 2017-03-26 by Ronaldo Faria Lima
 // This file purpose: Server struct
 
-import Foundation
 import POSIX
+#if os(Linux)
+    import Glibc
+#else
+    import Darwin.C
+#endif
 
 /// Possible running states for a server process
 public enum ServerState {
@@ -33,12 +37,10 @@ public enum ServerState {
     case created
     /// Server is running
     case running
-    /// Server was halted
-    case halted
-    /// Server has completed executing correctly
-    case exited
-    /// Process exited without control.
-    case killed
+    /// Server was stopped
+    case stopped
+    /// Server is restarting
+    case restarting
 }
 
 /// This class is an abstraction for a server instance. Each instance runs in
@@ -66,6 +68,7 @@ public final class Server {
 
     /// Starts this instance execution
     public func start() {
+        state = .running
         delegate?.loadConfiguration?()
         delegate?.start(arguments: CommandLine.arguments)
     }
@@ -73,6 +76,7 @@ public final class Server {
     /// Stops this instance execution
     public func stop() {
         delegate?.stop()
+        state = .stopped
     }
 
     /// Kills this instance by sending a KILL signal to it.
@@ -87,6 +91,7 @@ public final class Server {
     /// Restarts the server, refreshing it. In fact, this is a convenience
     /// method that stops and starts the server again.
     public func restart() {
+        state = .restarting
         stop()
         start()
     }

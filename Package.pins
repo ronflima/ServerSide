@@ -1,0 +1,18 @@
+{
+  "autoPin": true,
+  "pins": [
+    {
+      "package": "CPOSIX",
+      "reason": null,
+      "repositoryURL": "https://github.com/Zewo/CPOSIX.git",
+      "version": "0.15.0"
+    },
+    {
+      "package": "POSIX",
+      "reason": null,
+      "repositoryURL": "https://github.com/Zewo/POSIX.git",
+      "version": "0.15.2"
+    }
+  ],
+  "version": 1
+}
