@@ -31,18 +31,6 @@ import POSIX
     import Darwin.C
 #endif
 
-/// Possible running states for a server process
-public enum ServerState {
-    /// Server was created but is not yet running
-    case created
-    /// Server is running
-    case running
-    /// Server was stopped
-    case stopped
-    /// Server is restarting
-    case restarting
-}
-
 /// This class is an abstraction for a server instance.
 public final class Server {
     /// This instance PPID
@@ -51,8 +39,6 @@ public final class Server {
     public let pid: PID
     /// Server delegate
     public weak var delegate: ServerDelegate?
-    /// Server state
-    public var state = ServerState.created
     /// Default, and only instance, of the server
     public static let `default` = Server()
     /// Signal delegate. This is a class variable since signal handling is done
@@ -67,7 +53,6 @@ public final class Server {
 
     /// Starts this instance execution
     public func start() {
-        state = .running
         delegate?.loadConfiguration?()
         delegate?.start(arguments: CommandLine.arguments)
     }
@@ -75,7 +60,6 @@ public final class Server {
     /// Stops this instance execution
     public func stop() {
         delegate?.stop()
-        state = .stopped
     }
 
     /// Kills this instance by sending a KILL signal to it.
@@ -94,7 +78,6 @@ public final class Server {
     /// Restarts the server, refreshing it. In fact, this is a convenience
     /// method that stops and starts the server again.
     public func restart() {
-        state = .restarting
         stop()
         start()
     }
@@ -116,8 +99,6 @@ class SignalHandler {
         self.server = server
     }
 
-    // MARK: SignalHandlerDelegate
-
     /// Handles a signal received by the process
     func handleSignal(signal: SignalType) {
         switch signal {
@@ -125,9 +106,9 @@ class SignalHandler {
             server?.restart()
         case .int, .term:
             server?.stop()
+            exit(EXIT_SUCCESS)
         case .abrt:
-            // TODO: Log here what happened and kill the process
-            server?.kill()
+            exit(EXIT_FAILURE)
         default:
             // Do nothing.
             break
