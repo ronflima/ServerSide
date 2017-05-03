@@ -53,26 +53,13 @@ public final class Server {
 
     /// Starts this instance execution
     public func start() {
-        delegate?.loadConfiguration?()
+        delegate?.loadConfiguration()
         delegate?.start(arguments: CommandLine.arguments)
     }
 
     /// Stops this instance execution
     public func stop() {
         delegate?.stop()
-    }
-
-    /// Kills this instance by sending a KILL signal to it.
-    ///
-    /// - remarks: Use this only in extreme situations. This will make your
-    /// process end without notice. Any pending buffers will not be flushed and
-    /// all resources will be lost.
-    func kill() {
-        do {
-            try Signal.killPid(signal: .kill)
-        } catch {
-            // No need to do anything. If killPid fails, no problemo
-        }
     }
 
     /// Restarts the server, refreshing it. In fact, this is a convenience
@@ -107,7 +94,7 @@ class SignalHandler {
         case .int, .term:
             server?.stop()
             exit(EXIT_SUCCESS)
-        case .abrt:
+        case .abrt, .segv:
             exit(EXIT_FAILURE)
         default:
             // Do nothing.

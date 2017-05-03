@@ -24,17 +24,14 @@
 // Created: 2017-02-10 by Ronaldo Faria Lima
 // This file purpose: Protocol for swift server delegates
 
-import Foundation
-
 /// The ServerDelegate protocol is the entry-point of your server. ServerSide
 /// runtime will call your code in certain points in order to change several
 /// states that would be necessary for proper operation.
-@objc
-public protocol ServerDelegate {
+public protocol ServerDelegate: class {
     /// Load configuration. Your server must implement this method if it depend
     /// on some configuration stored on files somewhere. This is called by the
     /// run-time during server bootstrap and reload.
-    @objc optional func loadConfiguration()
+    func loadConfiguration()
     
     /// Entry point for your server. It is the main execution routine.
     func start(arguments: [String])
@@ -42,4 +39,8 @@ public protocol ServerDelegate {
     /// Called by the run-time in order to stop your server. Use this entry
     /// point to do a cleanup before exiting.
     func stop()
+}
+
+extension ServerDelegate {
+    func loadConfiguration() {}
 }

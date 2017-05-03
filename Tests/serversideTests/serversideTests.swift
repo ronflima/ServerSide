@@ -1,17 +1,15 @@
 import XCTest
-@testable import serverside
+@testable import ServerSide
 
 class serversideTests: XCTestCase {
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        XCTAssertEqual(serverside().text, "Hello, World!")
-    }
 
+    func testCreation() {
+        XCTAssertNotEqual(Server.default.pid, 0)
+    }
 
     static var allTests : [(String, (serversideTests) -> () throws -> Void)] {
         return [
-            ("testExample", testExample),
+            ("testCreation", testCreation),
         ]
     }
 }
