@@ -40,10 +40,10 @@ public final class Server {
     /// Server delegate
     public weak var delegate: ServerDelegate?
     /// Default, and only instance, of the server
-    public static let `default` = Server()
+    public static let main = Server()
     /// Signal delegate. This is a class variable since signal handling is done
     /// at the process level.
-    static let signalHandler = SignalHandler(server: Server.default)
+    static let signalHandler = SignalHandler(server: Server.main)
     
     /// Initializer. Adds a delegate to the running instance
     fileprivate init() {

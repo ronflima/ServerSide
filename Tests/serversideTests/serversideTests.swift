@@ -1,13 +1,13 @@
 import XCTest
 @testable import ServerSide
 
-class serversideTests: XCTestCase {
+public class ServerSideTests: XCTestCase {
 
     func testCreation() {
-        XCTAssertNotEqual(Server.default.pid, 0)
+        XCTAssertNotEqual(Server.main.pid, 0)
     }
 
-    static var allTests : [(String, (serversideTests) -> () throws -> Void)] {
+    static var allTests : [(String, (ServerSideTests) -> () throws -> Void)] {
         return [
             ("testCreation", testCreation),
         ]

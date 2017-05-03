@@ -1,6 +1,6 @@
 import XCTest
-@testable import serversideTests
+@testable import ServerSideTests
 
 XCTMain([
-     testCase(serversideTests.allTests),
+     testCase(ServerSideTests.allTests),
 ])
