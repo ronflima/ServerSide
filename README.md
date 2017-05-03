@@ -2,6 +2,7 @@
 
 [![Platform][platform-badge]][platform-url]
 [![License][mit-badge]][mit-url]
+[![Build Status](https://travis-ci.org/nineteen-apps/serverside.svg?branch=master)](https://travis-ci.org/nineteen-apps/serverside)
 
 A swift implementation for a server application. 
 
@@ -13,7 +14,6 @@ a unix server, integrating:
 - system logging with Syslog
 - signal handling
 - IPC
-- child process control and spawning
 - process priority control
 - etc
 
@@ -26,10 +26,6 @@ matters: your business code.
 Server Side is designed to interoperate with Zewo server software. In fact,
 Server Side is a complementation of Zewo, adding a lot of boiler plate in order
 to make your life easier.
-
-## ServerSide Design
-
-![design](img/design.png)
 
 ## License
 
