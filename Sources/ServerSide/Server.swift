@@ -43,19 +43,18 @@ public enum ServerState {
     case restarting
 }
 
-/// This class is an abstraction for a server instance. Each instance runs in
-/// its own address space, i.e., in a child process.
+/// This class is an abstraction for a server instance.
 public final class Server {
     /// This instance PPID
-    let ppid: PID
+    public let ppid: PID
     /// This instance PID
-    let pid: PID
+    public let pid: PID
     /// Server delegate
     public weak var delegate: ServerDelegate?
     /// Server state
     public var state = ServerState.created
     /// Default, and only instance, of the server
-    static let `default` = Server()
+    public static let `default` = Server()
     /// Signal delegate. This is a class variable since signal handling is done
     /// at the process level.
     static let signalHandler = SignalHandler(server: Server.default)
@@ -85,7 +84,11 @@ public final class Server {
     /// process end without notice. Any pending buffers will not be flushed and
     /// all resources will be lost.
     func kill() {
-        Signal.killPid(signal: .kill)
+        do {
+            try Signal.killPid(signal: .kill)
+        } catch {
+            // No need to do anything. If killPid fails, no problemo
+        }
     }
 
     /// Restarts the server, refreshing it. In fact, this is a convenience
@@ -99,30 +102,25 @@ public final class Server {
 
 /// Handles signals.
 ///
-/// - comments: It is supposed to have only a single instance of this struct. It
+/// - comments: It is supposed to have only a single instance of this class. It
 /// was designed with this in mind.
-struct SignalHandler: SignalHandlerDelegate {
+class SignalHandler {
     /// Dependency injected through initializer
     weak var server: Server?
     
     /// Installs it as a signal handler delegate
     init(server: Server) {
-        Signal.delegate = self
-        let signals: [SignalType] = [.hup, .int, .segv, .term, .abrt]
-        for signal in signals {
-            Signal.setTrap(signal: signal, action: .handle)
-        }
+        do {
+            try Signal.trap(for: .hup, .int, .segv, .term, .abrt, handler: handleSignal(signal:))
+        } catch { /* Do nothing */ }
         self.server = server
     }
 
     // MARK: SignalHandlerDelegate
 
     /// Handles a signal received by the process
-    mutating func handleSignal(signal: SignalType?) {
-        guard signal != nil else {
-            return
-        }
-        switch signal! {
+    func handleSignal(signal: SignalType) {
+        switch signal {
         case .hup:
             server?.restart()
         case .int, .term:
