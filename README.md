@@ -25,7 +25,8 @@ matters: your business code.
 
 ## Zewo
 
-ServerSide is written over Zewo modules. So, it depends on several Zewo modules.
+ServerSide is written over Zewo modules. You can consider it as a module written
+for Zewo.
 
 ## License
 
