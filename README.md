@@ -1,10 +1,12 @@
-# ServerSide
+# Server Side
+
+A swift implementation for a server application.
 
 [![Platform][platform-badge]][platform-url]
 [![License][mit-badge]][mit-url]
 [![Build Status](https://travis-ci.org/nineteen-apps/serverside.svg?branch=master)](https://travis-ci.org/nineteen-apps/serverside)
 
-A swift implementation for a server application. 
+# Project Goals
 
 Server Side is a small project which aim is to create all boiler plate code for
 a unix server, integrating:
@@ -17,15 +19,13 @@ a unix server, integrating:
 - process priority control
 - etc
 
-Server software is basic a repetition of those features. So, Server Side is
+Server software is basicaly a repetition of those features. So, Server Side is
 intended to create the full run-time so you have to worry about writing what
 matters: your business code.
 
 ## Zewo
 
-Server Side is designed to interoperate with Zewo server software. In fact,
-Server Side is a complementation of Zewo, adding a lot of boiler plate in order
-to make your life easier.
+ServerSide is written over Zewo modules. So, it depends on several Zewo modules.
 
 ## License
 
