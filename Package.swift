@@ -27,8 +27,5 @@
 import PackageDescription
 
 let package = Package(
-  name: "ServerSide",
-  dependencies: [
-        .Package(url: "https://github.com/Zewo/POSIX.git", majorVersion: 0, minor: 15),
-  ]
+  name: "ServerSide"
 )
