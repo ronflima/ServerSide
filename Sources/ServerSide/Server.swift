@@ -90,6 +90,11 @@ public extension Server {
         arguments.append(contentsOf: CommandLine.arguments)
         if shouldDaemonize {
             // Daemonize it 😈.
+            // Check if daemonization argument is on command line. If so, get it out to send a 
+            // clean argument line to the child server.
+            if let idx = arguments.index(of: ServerArguments.daemonize.rawValue) {
+                arguments.remove(at: idx)
+            }
             serverProcess = Process.launchedProcess(launchPath: serverExecutable, arguments: CommandLine.arguments)
             serverProcess?.waitUntilExit()
             return
@@ -98,6 +103,7 @@ public extension Server {
         delegate?(arguments)
     }
     
+    /// Stops your server. Terminate will send a TERM signal to it.
     public func stop() {
         guard let process = serverProcess else {
             // There is nothing to stop. So, quit.
