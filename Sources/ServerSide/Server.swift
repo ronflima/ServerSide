@@ -60,7 +60,7 @@ public final class Server {
     public var delegate: (([String])->Void)?
     
     /// This is called when your server is about to terminate, for instance, after receiving a termination signal.
-    public var terminationHandler: ((Process)->Void)?
+    public var terminationHandler: (()->())?
     
     /// Singleton pattern. There must be only a single instance of this class at any given time.
     public static var current: Server {
@@ -89,13 +89,11 @@ public extension Server {
         var arguments = [ServerArguments.child.rawValue]
         arguments.append(contentsOf: CommandLine.arguments)
         if shouldDaemonize {
-            // Daemonize it 😈.
-            // Check if daemonization argument is on command line. If so, get it out to send a 
-            // clean argument line to the child server.
-            if let idx = arguments.index(of: ServerArguments.daemonize.rawValue) {
-                arguments.remove(at: idx)
-            }
+            // Create the little devil. 😈
             serverProcess = Process.launchedProcess(launchPath: serverExecutable, arguments: CommandLine.arguments)
+            serverProcess?.terminationHandler = { [weak self] (process) in
+                self?.terminationHandler?()
+            }
             serverProcess?.waitUntilExit()
             return
         }
@@ -105,12 +103,10 @@ public extension Server {
     
     /// Stops your server. Terminate will send a TERM signal to it.
     public func stop() {
-        guard let process = serverProcess else {
+        guard let process = serverProcess, process.isRunning else {
             // There is nothing to stop. So, quit.
             return
         }
-        if process.isRunning {
-            process.terminate()
-        }
+        process.terminate()
     }
 }
