@@ -22,83 +22,89 @@
 // SOFTWARE.
 //
 // Created: 2017-03-26 by Ronaldo Faria Lima
-// This file purpose: Server struct
+// This file purpose: Server main process
 
-import POSIX
+import Foundation
 #if os(Linux)
     import Glibc
 #else
     import Darwin.C
 #endif
 
-/// This class is an abstraction for a server instance.
-public final class Server {
-    /// This instance PPID
-    public let ppid: PID
-    /// This instance PID
-    public let pid: PID
-    /// Server delegate
-    public weak var delegate: ServerDelegate?
-    /// Default, and only instance, of the server
-    public static let main = Server()
-    /// Signal delegate. This is a class variable since signal handling is done
-    /// at the process level.
-    static let signalHandler = SignalHandler(server: Server.main)
-    
-    /// Initializer. Adds a delegate to the running instance
-    fileprivate init() {
-        self.ppid = getppid()
-        self.pid = getpid()
-    }
-
-    /// Starts this instance execution
-    public func start() {
-        delegate?.loadConfiguration()
-        delegate?.start(arguments: CommandLine.arguments)
-    }
-
-    /// Stops this instance execution
-    public func stop() {
-        delegate?.stop()
-    }
-
-    /// Restarts the server, refreshing it. In fact, this is a convenience
-    /// method that stops and starts the server again.
-    public func restart() {
-        stop()
-        start()
-    }
+/// Arguments used internally for process control
+///
+/// - child: Process is a child process
+/// - daemonize: Force daemonization of the process
+enum ServerArguments: String {
+    case child = "child"
+    case daemonize = "daemonize"
 }
 
-/// Handles signals.
-///
-/// - comments: It is supposed to have only a single instance of this class. It
-/// was designed with this in mind.
-class SignalHandler {
-    /// Dependency injected through initializer
-    weak var server: Server?
+public final class Server {
+    static var server: Server?
+    var serverProcess: Process?
+    var isChild: Bool {
+        return CommandLine.arguments.contains(ServerArguments.child.rawValue)
+    }
+    var shouldDaemonize: Bool {
+        return CommandLine.arguments.contains(ServerArguments.daemonize.rawValue)
+    }
+    var serverExecutable: String {
+        return CommandLine.arguments[0]
+    }
+    var arguments: [String] {
+        return CommandLine.arguments
+    }
     
-    /// Installs it as a signal handler delegate
-    init(server: Server) {
-        do {
-            try Signal.trap(for: .hup, .int, .segv, .term, .abrt, handler: handleSignal(signal:))
-        } catch { /* Do nothing */ }
-        self.server = server
+    /// Application delegate. Here, you provide your application entry-point.
+    public var delegate: (([String])->Void)?
+    
+    /// This is called when your server is about to terminate, for instance, after receiving a termination signal.
+    public var terminationHandler: ((Process)->Void)?
+    
+    /// Singleton pattern. There must be only a single instance of this class at any given time.
+    public static var current: Server {
+        if server == nil {
+            server = Server()
+        }
+        return server!
     }
 
-    /// Handles a signal received by the process
-    func handleSignal(signal: SignalType) {
-        switch signal {
-        case .hup:
-            server?.restart()
-        case .int, .term:
-            server?.stop()
-            exit(EXIT_SUCCESS)
-        case .abrt, .segv:
-            exit(EXIT_FAILURE)
-        default:
-            // Do nothing.
-            break
+    init() {}
+}
+
+// MARK: - Server Lifecycle
+public extension Server {
+    /// Starts your server. This method returns only when your code has ended.
+    public func start() {
+        guard serverProcess == nil else {
+            // If we have already started, don't do it again.
+            return
+        }
+        if isChild {
+            // Starts the child instance, effectivelly
+            delegate?(CommandLine.arguments)
+            return
+        }
+        var arguments = [ServerArguments.child.rawValue]
+        arguments.append(contentsOf: CommandLine.arguments)
+        if shouldDaemonize {
+            // Daemonize it 😈.
+            serverProcess = Process.launchedProcess(launchPath: serverExecutable, arguments: CommandLine.arguments)
+            serverProcess?.waitUntilExit()
+            return
+        }
+        // No. We don't need to daemonize. So, make it happen.
+        delegate?(arguments)
+    }
+    
+    public func stop() {
+        guard let process = serverProcess else {
+            // There is nothing to stop. So, quit.
+            return
+        }
+        if process.isRunning {
+            process.terminate()
         }
     }
 }
