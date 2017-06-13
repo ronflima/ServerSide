@@ -21,18 +21,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// Created: 2017-01-12 by Ronaldo Faria Lima
-// This file purpose: Package description
+// Created: 2017-06-12 by Ronaldo Faria Lima
+// This file purpose: Server side exceptions and errors
 
-import PackageDescription
 
-let package = Package(
-  name: "ServerSide",
-  targets: [
-    Target(name: "ServerSide", dependencies: ["CPosix"]),
-    Target(name: "CPosix")
-  ],
-  dependencies: [
-    .Package(url: "https://github.com/Zewo/Venice.git", majorVersion: 0, minor: 19)
-  ]
-)
+/// Errors thrown by ServerSide software
+public enum ServerSideError: Error {
+    /// Failed to start main server co-routine
+    case cannotStartCoroutine
+    /// Server is already running. Tried to start another server coroutine.
+    case alreadyRunning
+    /// Tried to stop a server that is not running
+    case notRunning
+    /// Tried to start a server without an entry point
+    case noMainRoutine
+}

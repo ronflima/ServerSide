@@ -25,11 +25,7 @@
 // This file purpose: Server main process
 
 import Foundation
-#if os(Linux)
-    import Glibc
-#else
-    import Darwin.C
-#endif
+import Venice
 
 /// Arguments used internally for process control
 ///
@@ -40,73 +36,119 @@ enum ServerArguments: String {
     case daemonize = "daemonize"
 }
 
+/// Server. This class represents your server and provides initial services like
+/// signal handling for proper integration with System V and upstart
+/// initialization schemes.
 public final class Server {
-    static var server: Server?
-    var serverProcess: Process?
-    var isChild: Bool {
-        return CommandLine.arguments.contains(ServerArguments.child.rawValue)
-    }
-    var shouldDaemonize: Bool {
+    fileprivate var serverCoroutine: Coroutine?
+    fileprivate let lock: Lock! = Lock()
+    fileprivate var exiting = false
+    fileprivate var main: (([String])->())?
+    fileprivate var shouldDaemonize: Bool {
         return CommandLine.arguments.contains(ServerArguments.daemonize.rawValue)
     }
-    var serverExecutable: String {
+
+    /// Returns true if this server was started by another process.
+    public var isChild: Bool {
+        return CommandLine.arguments.contains(ServerArguments.child.rawValue)
+    }
+    /// Server executable
+    public var serverExecutable: String {
         return CommandLine.arguments[0]
     }
-    var arguments: [String] {
+    /// Command line arguments
+    public var arguments: [String] {
         return CommandLine.arguments
     }
-    
-    /// Application delegate. Here, you provide your application entry-point.
-    public var delegate: (([String])->Void)?
-    
-    /// This is called when your server is about to terminate, for instance, after receiving a termination signal.
-    public var terminationHandler: (()->())?
-    
-    /// Singleton pattern. There must be only a single instance of this class at any given time.
-    public static var current: Server {
-        if server == nil {
-            server = Server()
-        }
-        return server!
-    }
+    /// At exit handler. Called when the server is about to finish its
+    /// execution.
+    public var atExit: (()->())?
+    /// Singleton pattern. There must be only a single instance of this class at
+    /// any given time.
+    public static let current = Server()
 
-    init() {}
+    private init() {
+        // Signal.trap fails only if trying to trap .stop and .kill. So, we can
+        // ignore it.
+        try? Signal.trap(for: .term, .int, .hup) { [unowned self] (signal) in
+            switch signal {
+            case .term, .int: // Stop the process
+                self.exiting = true
+                try? self.stop()
+            case .hup:        // Restart the process
+                try? self.stop()
+                try? self.start()
+            default:
+                break
+            }
+        }
+    }
 }
 
 // MARK: - Server Lifecycle
 public extension Server {
     /// Starts your server. This method returns only when your code has ended.
-    public func start() {
-        guard serverProcess == nil else {
-            // If we have already started, don't do it again.
-            return
+    ///
+    /// - Remarks: This method returns only when daemonizing
+    /// - Throws: 
+    ///
+    ///     - ServerSideError.alreadyRunning when trying to start the server a
+    ///     second time.
+    ///     - ServerSideError.noMainRoutine when trying to start a server
+    ///     without a main routine
+    public func start(main: (([String])->())? = nil) throws {
+        guard serverCoroutine == nil else {
+            throw ServerSideError.alreadyRunning
         }
-        if isChild {
-            // Starts the child instance, effectivelly
-            delegate?(CommandLine.arguments)
-            return
+        guard main != nil || self.main != nil else {
+            throw ServerSideError.noMainRoutine
         }
-        var arguments = [ServerArguments.child.rawValue]
-        arguments.append(contentsOf: CommandLine.arguments)
-        if shouldDaemonize {
-            // Create the little devil. 😈
-            serverProcess = Process.launchedProcess(launchPath: serverExecutable, arguments: CommandLine.arguments)
-            serverProcess?.terminationHandler = { [weak self] (process) in
-                self?.terminationHandler?()
+        if !isChild {
+            var chldArgs = [ServerArguments.child.rawValue]
+            chldArgs.append(contentsOf: arguments)
+            if shouldDaemonize {
+                Process.launchedProcess(launchPath: serverExecutable, arguments: chldArgs)
+                return
             }
-            serverProcess?.waitUntilExit()
-            return
         }
-        // No. We don't need to daemonize. So, make it happen.
-        delegate?(arguments)
+        self.main = main
+        serverCoroutine = try Coroutine { [unowned self] () in
+            self.lock.lock()
+            // TODO: Add error handling here
+            self.main?(self.arguments)
+            self.lock.unlock()
+        }
+        waitLoop: while !lock.wait(until: 1.second.fromNow()) && serverCoroutine != nil {
+            do {
+                try Coroutine.yield()
+            } catch {
+                break waitLoop
+            }
+        }
+        if serverCoroutine == nil {
+            // Forced stop. The lock is probably still locked. If so, unlock
+            // it.
+            if lock.isLocked {
+                lock.unlock()
+            }
+        }
     }
-    
-    /// Stops your server. Terminate will send a TERM signal to it.
-    public func stop() {
-        guard let process = serverProcess, process.isRunning else {
-            // There is nothing to stop. So, quit.
-            return
+
+    /// Stops the server execution.
+    ///
+    /// - Throws:
+    ///
+    ///    - ServerSideError.notRunning if trying to stop the server a second
+    ///    time.
+    public func stop() throws {
+        guard serverCoroutine != nil else {
+            throw ServerSideError.notRunning
         }
-        process.terminate()
+        serverCoroutine?.cancel()
+        serverCoroutine = nil
+        if exiting {
+            atExit?()
+        }
     }
 }
+

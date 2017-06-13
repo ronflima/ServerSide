@@ -1,15 +1,27 @@
 import XCTest
+import Venice
+
 @testable import ServerSide
 
 public class ServerSideTests: XCTestCase {
 
-    func testCreation() {
-        XCTAssertNotEqual(Server.main.pid, 0)
+    func testGracefulStop() throws {
+        var stop = false
+        try Server.current.start { (arguments) in
+            while !stop {
+                do {
+                    try Coroutine.yield()
+                } catch {
+                    stop = true
+                }
+            }
+        }
+        try Server.current.stop()
     }
 
     static var allTests : [(String, (ServerSideTests) -> () throws -> Void)] {
         return [
-            ("testCreation", testCreation),
+            ("testGracefulStop", testGracefulStop),
         ]
     }
 }

@@ -23,6 +23,11 @@ Server software is basicaly a repetition of those features. So, Server Side is
 intended to create the full run-time so you have to worry about writing what
 matters: your business code.
 
+# Requirements
+
+This project is written using Swift 3. As soon as Swift 4 gets available for
+production, the full project will be migrated.
+
 ## Zewo
 
 ServerSide is written over Zewo modules. You can consider it as a module written
