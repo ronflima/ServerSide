@@ -49,7 +49,7 @@ public typealias AtExitCoroutine = ()->Void
 public final class Server {
     fileprivate var serverCoroutine: Coroutine?
     fileprivate let lock: Lock! = Lock()
-    fileprivate var exiting = false
+    fileprivate var exiting = true
     fileprivate var main: MainCoroutine?
     fileprivate var shouldDaemonize: Bool {
         return CommandLine.arguments.contains(ServerArguments.daemonize.rawValue)
@@ -84,6 +84,7 @@ public final class Server {
                 self.exiting = true
                 try? self.stop()
             case .hup:        // Restart the process
+                self.exiting = false
                 try? self.stop()
                 try? self.start()
             default:
