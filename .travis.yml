@@ -5,7 +5,11 @@ language: generic
 sudo: required
 dist: trusty
 osx_image: xcode8
+addons:
+  apt:
+    sources:
+      - sourceline: 'deb [trusted=yes] http://apt.zewo.io ./'
+    packages:
+      - zewo
 install:
-  - eval "$(curl -sL https://raw.githubusercontent.com/Zewo/Zewo/master/Scripts/Travis/install.sh)"
-script:
-  - bash <(curl -s https://raw.githubusercontent.com/Zewo/Zewo/master/Scripts/Travis/build-test.sh) ServerSide
+  - eval "$(curl -sL http://sh.zewo.io/install-zewo.sh)"
