@@ -33,6 +33,6 @@ let package = Package(
     Target(name: "CPosix")
   ],
   dependencies: [
-    .Package(url: "https://github.com/Zewo/Venice.git", majorVersion: 0, minor: 19)
+    .Package(url: "https://github.com/Zewo/Zewo.git", majorVersion: 0, minor: 15)
   ]
 )

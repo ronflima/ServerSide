@@ -2,16 +2,34 @@
   "autoPin": true,
   "pins": [
     {
+      "package": "CBtls",
+      "reason": null,
+      "repositoryURL": "https://github.com/Zewo/CBtls.git",
+      "version": "0.5.0"
+    },
+    {
       "package": "CLibdill",
       "reason": null,
       "repositoryURL": "https://github.com/Zewo/CLibdill.git",
       "version": "1.6.0"
     },
     {
+      "package": "CLibtls",
+      "reason": null,
+      "repositoryURL": "https://github.com/Zewo/CLibtls.git",
+      "version": "2.5.4"
+    },
+    {
       "package": "Venice",
       "reason": null,
       "repositoryURL": "https://github.com/Zewo/Venice.git",
       "version": "0.19.2"
+    },
+    {
+      "package": "Zewo",
+      "reason": null,
+      "repositoryURL": "https://github.com/Zewo/Zewo.git",
+      "version": "0.15.0"
     }
   ],
   "version": 1
