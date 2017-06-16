@@ -26,6 +26,7 @@
 
 import Foundation
 import Venice
+import Core
 
 /// Arguments used internally for process control
 ///
@@ -74,6 +75,7 @@ public final class Server {
     public static let current = Server()
 
     private init() {
+        Logger.appenders.append(SyslogAppender(ident: ProcessInfo.processInfo.processName))
         // Signal.trap fails only if trying to trap .stop and .kill. So, we can
         // ignore it.
         try? Signal.trap(for: .term, .int, .hup) { [unowned self] (signal) in
