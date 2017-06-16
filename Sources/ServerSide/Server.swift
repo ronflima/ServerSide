@@ -36,6 +36,12 @@ enum ServerArguments: String {
     case daemonize = "daemonize"
 }
 
+/// Main coroutine related type. A server use it as an entry point.
+public typealias MainCoroutine = (([String]) throws -> Void)
+
+/// Secondary co-routine, called when the server is about to stop
+public typealias AtExitCoroutine = ()->Void
+
 /// Server. This class represents your server and provides initial services like
 /// signal handling for proper integration with System V and upstart
 /// initialization schemes.
@@ -43,7 +49,7 @@ public final class Server {
     fileprivate var serverCoroutine: Coroutine?
     fileprivate let lock: Lock! = Lock()
     fileprivate var exiting = false
-    fileprivate var main: (([String])->())?
+    fileprivate var main: MainCoroutine?
     fileprivate var shouldDaemonize: Bool {
         return CommandLine.arguments.contains(ServerArguments.daemonize.rawValue)
     }
@@ -62,7 +68,7 @@ public final class Server {
     }
     /// At exit handler. Called when the server is about to finish its
     /// execution.
-    public var atExit: (()->())?
+    public var atExit: AtExitCoroutine?
     /// Singleton pattern. There must be only a single instance of this class at
     /// any given time.
     public static let current = Server()
@@ -96,12 +102,9 @@ public extension Server {
     ///     second time.
     ///     - ServerSideError.noMainRoutine when trying to start a server
     ///     without a main routine
-    public func start(main: (([String])->())? = nil) throws {
+    public func start(main: @escaping MainCoroutine) throws {
         guard serverCoroutine == nil else {
             throw ServerSideError.alreadyRunning
-        }
-        guard main != nil || self.main != nil else {
-            throw ServerSideError.noMainRoutine
         }
         if !isChild {
             var chldArgs = [ServerArguments.child.rawValue]
@@ -112,10 +115,16 @@ public extension Server {
             }
         }
         self.main = main
+        try start()
+    }
+
+    fileprivate func start() throws {
+        guard self.main != nil else {
+            throw ServerSideError.noMainRoutine
+        }
         serverCoroutine = try Coroutine { [unowned self] () in
             self.lock.lock()
-            // TODO: Add error handling here
-            self.main?(self.arguments)
+            try? self.main?(self.arguments)
             self.lock.unlock()
         }
         waitLoop: while !lock.wait(until: 1.second.fromNow()) && serverCoroutine != nil {
