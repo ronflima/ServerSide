@@ -11,13 +11,12 @@ A swift implementation for a server application.
 Server Side is a small project which aim is to create all boiler plate code for
 a unix server, integrating:
 
-- startup systems, like System V or upstart;
-- configuration files in several formats like INI, Yaml, XML, etc;
-- system logging with Syslog
-- signal handling
-- IPC
-- process priority control
-- etc
+- [x] startup systems support, like System V or upstart;
+- [ ] configuration files in several formats like INI, Yaml, XML, etc;
+- [x] system logging with Syslog
+- [x] signal handling
+- [ ] IPC support
+- [ ] process priority control
 
 Server software is basicaly a repetition of those features. So, Server Side is
 intended to create the full run-time so you have to worry about writing what
@@ -30,8 +29,9 @@ production, the full project will be migrated.
 
 ## Zewo
 
-ServerSide is written over Zewo modules. You can consider it as a module written
-for Zewo.
+Zewo is a dependency for ServerSide. ServerSide starts your code inside a
+co-routine and manages all of it using Venice primitives. Therefore, ServerSide
+is the natural entry point for Zewo-enabled servers.
 
 ## License
 
