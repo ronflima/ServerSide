@@ -4,7 +4,7 @@ A swift implementation for a server application.
 
 [![Platform][platform-badge]][platform-url]
 [![License][mit-badge]][mit-url]
-[![Build Status](https://travis-ci.org/nineteen-apps/serverside.svg?branch=master)](https://travis-ci.org/nineteen-apps/serverside)
+[![Build Status](https://travis-ci.org/nineteen-apps/ServerSide.svg?branch=master)](https://travis-ci.org/nineteen-apps/ServerSide)
 
 # Project Goals
 
