@@ -6,7 +6,7 @@ import Venice
 public class ServerSideTests: XCTestCase {
     func testGracefulStop() throws {
         var stop = false
-        try Server.current.start { (arguments) in
+        try ServerSide.current.start { (arguments) in
             while !stop {
                 do {
                     try Coroutine.yield()
@@ -16,10 +16,10 @@ public class ServerSideTests: XCTestCase {
             }
         }
         var called = false
-        Server.current.atExit = {
+        ServerSide.current.atExit = {
             called = true
         }
-        try Server.current.stop()
+        try ServerSide.current.stop()
         XCTAssertEqual(called, true, "Failed to call atExit")
     }
 
