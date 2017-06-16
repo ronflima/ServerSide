@@ -112,7 +112,7 @@ public extension Server {
             var chldArgs = [ServerArguments.child.rawValue]
             chldArgs.append(contentsOf: arguments)
             if shouldDaemonize {
-                Process.launchedProcess(launchPath: serverExecutable, arguments: chldArgs)
+                let _ = Process.launchedProcess(launchPath: serverExecutable, arguments: chldArgs)
                 return
             }
         }
