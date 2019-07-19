@@ -2,7 +2,7 @@
 
 A C framework for server implementations
 
-[![Platform][platform-badge]]
+![Platform][platform-badge]
 [![License][mit-badge]][mit-url]
 [![Build Status](https://travis-ci.org/nineteen-apps/ServerSide.svg?branch=master)](https://travis-ci.org/nineteen-apps/ServerSide)
 
@@ -31,6 +31,6 @@ due its small footprint.
 
 This software is distributed under [MIT License][mit-url].
 
-[platform-badge]: https://img.shields.io/badge/Platform-Mac%20%26%20Linux-lightgray.svg?style=flat
+[platform-badge]: https://img.shields.io/badge/Platform-unix%20and%20linux-brightgreen.svg
 [mit-badge]: https://img.shields.io/badge/License-MIT-blue.svg?style=flat
 [mit-url]: https://tldrlegal.com/license/mit-license
